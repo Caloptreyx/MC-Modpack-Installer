@@ -1,0 +1,9 @@
+/* Modpack descriptions and changelogs come from Modrinth / CurseForge and embed wide images. */
+.mpi-rich-text {
+  overflow-wrap: anywhere;
+}
+
+.mpi-rich-text img {
+  max-width: 100%;
+  height: auto;
+}
