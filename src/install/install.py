@@ -822,7 +822,11 @@ def read_mod_metadata(jar):
                 for mod in data.get("mods") or []:
                     if mod.get("modId"):
                         ids.add(str(mod["modId"]).lower())
-                for dep_list in (data.get("dependencies") or {}).values():
+                dependencies = data.get("dependencies") or {}
+                # Normalize flat [[dependencies]] arrays (e.g. arseng) to a group.
+                if isinstance(dependencies, list):
+                    dependencies = {"": dependencies}
+                for dep_list in dependencies.values():
                     for dep in dep_list if isinstance(dep_list, list) else []:
                         mandatory = dep.get("mandatory") is True or str(dep.get("type", "")).lower() == "required"
                         if mandatory and str(dep.get("side", "BOTH")).upper() != "CLIENT" and dep.get("modId"):
