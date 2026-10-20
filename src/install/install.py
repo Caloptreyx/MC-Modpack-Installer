@@ -808,6 +808,13 @@ def install_loader(loader, version, minecraft):
 # ------------------------------------------------------- client-only cleanup
 
 
+def table_list(value):
+    """A TOML array of tables (or one table) as a list of tables; anything else in a malformed file as empty."""
+    if isinstance(value, dict):
+        return [value]
+    return [item for item in value if isinstance(item, dict)] if isinstance(value, list) else []
+
+
 def read_mod_metadata(jar):
     """Returns (mod ids, client_only, required dependency ids) of a mod jar."""
     ids, required = set(), set()
@@ -838,15 +845,18 @@ def read_mod_metadata(jar):
                     data = tomllib.loads(archive.read(meta).decode("utf-8", errors="replace"))
                 except tomllib.TOMLDecodeError:
                     continue
-                for mod in data.get("mods") or []:
+                for mod in table_list(data.get("mods")):
                     if mod.get("modId"):
                         ids.add(str(mod["modId"]).lower())
-                for dep_list in (data.get("dependencies") or {}).values():
-                    for dep in dep_list if isinstance(dep_list, list) else []:
+                # the spec's `[[dependencies.<modId>]]`, or a bare `[[dependencies]]` array some mods ship
+                deps = data.get("dependencies")
+                for group in deps.values() if isinstance(deps, dict) else [deps]:
+                    for dep in table_list(group):
                         mandatory = dep.get("mandatory") is True or str(dep.get("type", "")).lower() == "required"
                         if mandatory and str(dep.get("side", "BOTH")).upper() != "CLIENT" and dep.get("modId"):
                             required.add(str(dep["modId"]).lower())
-    except (zipfile.BadZipFile, OSError, ValueError) as err:
+    except (zipfile.BadZipFile, OSError, ValueError, AttributeError, TypeError) as err:
+        # metadata in a shape not handled above: the jar is simply not treated as client-only
         log(f"could not inspect {jar.name}: {err}")
     return ids, client_only, required
 
