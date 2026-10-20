@@ -2,7 +2,7 @@
 name = "dev_caloptreyx_modpacks"
 description = "Browse and install Minecraft modpacks from Modrinth and CurseForge."
 authors = ["Caloptreyx"]
-version = "0.1.1"
+version = "0.1.2"
 edition = { workspace = true }
 
 [dependencies]
