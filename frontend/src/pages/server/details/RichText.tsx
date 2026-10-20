@@ -2,6 +2,7 @@ import Markdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 import remarkGfm from 'remark-gfm';
+import { markdownComponents } from '@/providers/TranslationProvider.tsx';
 import type { TextFormat } from '../../../lib/schemas.ts';
 
 interface Props {
@@ -19,7 +20,11 @@ export default function RichText({ content, format }: Props) {
 
   return (
     <div className='mpi-rich-text'>
-      <Markdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw, rehypeSanitize]}>
+      <Markdown
+        remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeRaw, rehypeSanitize]}
+        components={markdownComponents}
+      >
         {source}
       </Markdown>
     </div>
