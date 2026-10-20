@@ -3,7 +3,7 @@
 A [Calagopus Panel](https://calagopus.com) extension that lets users browse Minecraft modpacks on
 **Modrinth** and **CurseForge** and install them onto their server in one click.
 
-Package name: `dev.caloptreyx.modpacks` · Requires panel `>=1.2.2`
+Package name: `dev.caloptreyx.modpacks` · Requires panel `>=1.2.6`
 
 ## Features
 
