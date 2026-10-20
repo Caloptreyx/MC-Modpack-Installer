@@ -225,8 +225,8 @@ def file_hash(path, algorithm):
     return digest.hexdigest()
 
 
-def download(url, destination, hashes=None):
-    """Downloads `url` to `destination` and verifies it against `hashes` ({algorithm: hex})."""
+def download(url, destination, hashes=None, size=None):
+    """Downloads `url` to `destination` and verifies it against `hashes` ({algorithm: hex}) and `size` (bytes)."""
     destination.parent.mkdir(parents=True, exist_ok=True)
     partial = destination.with_name(destination.name + ".part")
     last_error = None
@@ -235,6 +235,15 @@ def download(url, destination, hashes=None):
             req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
             with urllib.request.urlopen(req, timeout=120) as response, open(partial, "wb") as out:
                 shutil.copyfileobj(response, out, 1024 * 1024)
+                # urllib asks for no compression, so Content-Length is the file's size unless a server encodes anyway
+                encoded = response.headers.get("Content-Encoding", "identity").lower() != "identity"
+                announced = None if encoded else response.headers.get("Content-Length")
+            # urllib ends the read without an error when the connection drops early, so compare the length
+            received = partial.stat().st_size
+            if announced and announced.isdigit() and received != int(announced):
+                raise InstallError(f"download of {destination.name} was cut short: got {received} of {announced} bytes")
+            if size and received != size:
+                raise InstallError(f"size mismatch for {destination.name}: expected {size} bytes, got {received}")
             for algorithm, expected in (hashes or {}).items():
                 if not expected:
                     continue
@@ -250,7 +259,7 @@ def download(url, destination, hashes=None):
                 partial.unlink(missing_ok=True)
                 raise InstallError(f"download of {destination.name} failed with HTTP {err.code}") from err
         except InstallError as err:
-            # a hash mismatch can be a truncated transfer, retry it
+            # a short file or a hash mismatch is usually a truncated transfer, retry it
             last_error = err
         except (urllib.error.URLError, TimeoutError, ConnectionError, OSError) as err:
             last_error = err
@@ -648,7 +657,8 @@ def run_mcjars_installation(build):
                 if rel is None:
                     raise InstallError("mcjars returned an unsafe installation path")
                 log(f"downloading {rel}")
-                download(step["url"], ROOT / rel)
+                size = step.get("size")
+                download(step["url"], ROOT / rel, size=size if isinstance(size, int) and size > 0 else None)
             elif kind == "unzip":
                 rel = safe_relative(str(step.get("file") or ""))
                 location = safe_relative(str(step.get("location") or ".").strip("./") or "x")
@@ -726,11 +736,7 @@ def run_official_installer(loader, version, minecraft):
     for leftover in ROOT.glob("*installer.jar.log"):
         leftover.unlink(missing_ok=True)
 
-    # Modern Forge/NeoForge start through @unix_args.txt; copy it to the server
-    # root like the stock Forge eggs do so `@unix_args.txt` startups work.
-    args = sorted(ROOT.glob("libraries/net/*/*/*/unix_args.txt"))
-    if args:
-        shutil.copyfile(args[-1], ROOT / "unix_args.txt")
+    if expose_unix_args():
         log("installed a modern Forge/NeoForge server; the startup command must use @unix_args.txt")
         return
     jars = [p for p in ROOT.glob("forge-*.jar") if "installer" not in p.name]
@@ -739,6 +745,16 @@ def run_official_installer(loader, version, minecraft):
         target = ROOT / SERVER_JARFILE
         remove_path(target)
         jars[0].rename(target)
+
+
+def expose_unix_args():
+    """Modern Forge/NeoForge start through @unix_args.txt; copies it to the server root like the stock Forge eggs
+    do, so `@unix_args.txt` startups work. Returns whether the installed loader has one."""
+    args = sorted(ROOT.glob("libraries/net/*/*/*/unix_args.txt"))
+    if not args:
+        return False
+    shutil.copyfile(args[-1], ROOT / "unix_args.txt")
+    return True
 
 
 def fabric_meta_launcher(minecraft, version):
@@ -777,6 +793,9 @@ def install_loader(loader, version, minecraft):
             raise InstallError(f"no {loader} build is available for Minecraft {minecraft}")
         log(f"{loader} {version} is unavailable, installing {fallback.get('name')} instead")
         run_mcjars_installation(fallback)
+    # mcjars builds start with `java -jar server.jar`; Forge/NeoForge eggs start with `@unix_args.txt`, so offer both
+    if loader in ("forge", "neoforge"):
+        expose_unix_args()
 
     produced = ROOT / "server.jar"
     if SERVER_JARFILE != "server.jar" and produced.exists():
