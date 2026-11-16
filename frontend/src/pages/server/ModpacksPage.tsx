@@ -13,8 +13,8 @@ import getOverview from '../../api/server/getOverview.ts';
 import { modpackQueryKeys } from '../../lib/queryKeys.ts';
 import { useExtTranslations } from '../../translations.ts';
 import BrowseModpacksPage from './browse/BrowseModpacksPage.tsx';
-import DetectedSetup from './DetectedSetup.tsx';
 import ModpackDetailsPage from './details/ModpackDetailsPage.tsx';
+import DetectedSetup from './DetectedSetup.tsx';
 import InstallModpackModal, { type InstallTarget } from './modals/InstallModpackModal.tsx';
 
 /** Server route `/modpacks/*`: the browser and the modpack details pages share the overview and install modal. */

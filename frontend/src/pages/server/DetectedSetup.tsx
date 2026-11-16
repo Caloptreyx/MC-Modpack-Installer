@@ -3,8 +3,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Group } from '@mantine/core';
 import Badge from '@/elements/data-display/Badge.tsx';
 import ConditionalTooltip from '@/elements/overlays/ConditionalTooltip.tsx';
-import LoaderBadge from '../../components/LoaderBadge.tsx';
 import type { Overview } from '../../lib/schemas.ts';
+import LoaderBadge from '../../components/LoaderBadge.tsx';
 import { useExtTranslations } from '../../translations.ts';
 
 /** Badges with the detected mod loader and Minecraft version of the server. */

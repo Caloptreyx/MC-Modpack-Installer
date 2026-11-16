@@ -10,14 +10,14 @@ import Alert from '@/elements/feedback/Alert.tsx';
 import FormattedTimestamp from '@/elements/time/FormattedTimestamp.tsx';
 import Text from '@/elements/typography/Text.tsx';
 import { useServerStore } from '@/stores/server.ts';
+import type { InstalledModpack } from '../../../lib/schemas.ts';
+import type { InstallPreset } from '../modals/InstallModpackModal.tsx';
 import getVersions from '../../../api/server/getVersions.ts';
 import LoaderBadge from '../../../components/LoaderBadge.tsx';
 import ModpackIcon from '../../../components/ModpackIcon.tsx';
 import ProviderMark from '../../../components/ProviderMark.tsx';
 import { modpackQueryKeys } from '../../../lib/queryKeys.ts';
-import type { InstalledModpack } from '../../../lib/schemas.ts';
 import { useExtTranslations } from '../../../translations.ts';
-import type { InstallPreset } from '../modals/InstallModpackModal.tsx';
 
 interface Props {
   installed: InstalledModpack;

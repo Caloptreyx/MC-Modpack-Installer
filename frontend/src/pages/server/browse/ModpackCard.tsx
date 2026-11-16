@@ -8,10 +8,10 @@ import Card from '@/elements/data-display/Card.tsx';
 import Tooltip from '@/elements/overlays/Tooltip.tsx';
 import FormattedTimestamp from '@/elements/time/FormattedTimestamp.tsx';
 import Text from '@/elements/typography/Text.tsx';
+import type { ModpackSummary } from '../../../lib/schemas.ts';
 import LoaderBadge from '../../../components/LoaderBadge.tsx';
 import ModpackIcon from '../../../components/ModpackIcon.tsx';
 import { compactNumber, gameVersionRange } from '../../../lib/format.ts';
-import type { ModpackSummary } from '../../../lib/schemas.ts';
 import { useExtTranslations } from '../../../translations.ts';
 
 interface Props {

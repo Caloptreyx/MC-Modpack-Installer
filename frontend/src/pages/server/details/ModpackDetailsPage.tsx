@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { faDiscord } from '@fortawesome/free-brands-svg-icons';
 import {
   faArrowLeft,
@@ -17,7 +18,6 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Anchor, Center, Divider, Group, Stack } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
-import type { ReactNode } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { httpErrorToHuman } from '@/api/axios.ts';
 import Button from '@/elements/buttons/Button.tsx';

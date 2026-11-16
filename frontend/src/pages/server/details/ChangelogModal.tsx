@@ -6,9 +6,9 @@ import Spinner from '@/elements/feedback/Spinner.tsx';
 import { Modal } from '@/elements/modals/Modal.tsx';
 import Text from '@/elements/typography/Text.tsx';
 import { useServerStore } from '@/stores/server.ts';
+import type { ModpackVersion, Provider } from '../../../lib/schemas.ts';
 import getVersion from '../../../api/server/getVersion.ts';
 import { modpackQueryKeys } from '../../../lib/queryKeys.ts';
-import type { ModpackVersion, Provider } from '../../../lib/schemas.ts';
 import { useExtTranslations } from '../../../translations.ts';
 import RichText from './RichText.tsx';
 

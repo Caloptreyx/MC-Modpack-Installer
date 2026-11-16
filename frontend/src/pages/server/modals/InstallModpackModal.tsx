@@ -16,13 +16,13 @@ import { useServerCan } from '@/plugins/usePermissions.ts';
 import { useToast } from '@/providers/ToastProvider.tsx';
 import { useTranslations } from '@/providers/TranslationProvider.tsx';
 import { useServerStore } from '@/stores/server.ts';
+import type { InstallMode, Loader, ModpackVersion, Overview, Provider } from '../../../lib/schemas.ts';
 import getVersions from '../../../api/server/getVersions.ts';
 import installModpack from '../../../api/server/installModpack.ts';
 import ModpackIcon from '../../../components/ModpackIcon.tsx';
 import ProviderMark from '../../../components/ProviderMark.tsx';
 import { recommendedImage, requiredJava } from '../../../lib/java.ts';
 import { modpackQueryKeys } from '../../../lib/queryKeys.ts';
-import type { InstallMode, Loader, ModpackVersion, Overview, Provider } from '../../../lib/schemas.ts';
 import { useExtTranslations } from '../../../translations.ts';
 
 export interface InstallTarget {

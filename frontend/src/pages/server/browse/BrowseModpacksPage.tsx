@@ -18,6 +18,7 @@ import SegmentedControl from '@/elements/layout/SegmentedControl.tsx';
 import ConditionalTooltip from '@/elements/overlays/ConditionalTooltip.tsx';
 import Text from '@/elements/typography/Text.tsx';
 import { useServerStore } from '@/stores/server.ts';
+import type { InstallTarget } from '../modals/InstallModpackModal.tsx';
 import getFilters from '../../../api/server/getFilters.ts';
 import searchModpacks from '../../../api/server/searchModpacks.ts';
 import ProviderMark from '../../../components/ProviderMark.tsx';
@@ -32,7 +33,6 @@ import {
   sortModeSchema,
 } from '../../../lib/schemas.ts';
 import { useExtTranslations } from '../../../translations.ts';
-import type { InstallTarget } from '../modals/InstallModpackModal.tsx';
 import InstalledModpackCard from './InstalledModpackCard.tsx';
 import ModpackCard from './ModpackCard.tsx';
 

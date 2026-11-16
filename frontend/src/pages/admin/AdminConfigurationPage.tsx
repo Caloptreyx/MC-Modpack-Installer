@@ -18,12 +18,12 @@ import Tabs from '@/elements/layout/Tabs.tsx';
 import Text from '@/elements/typography/Text.tsx';
 import { useAdminCan } from '@/plugins/usePermissions.ts';
 import { useToast } from '@/providers/ToastProvider.tsx';
+import type { AdminSettings } from '../../lib/schemas.ts';
 import getSettings from '../../api/admin/getSettings.ts';
 import updateSettings from '../../api/admin/updateSettings.ts';
 import verifyCurseforgeKey from '../../api/admin/verifyCurseforgeKey.ts';
 import { ProviderDot } from '../../components/ProviderMark.tsx';
 import { modpackQueryKeys } from '../../lib/queryKeys.ts';
-import type { AdminSettings } from '../../lib/schemas.ts';
 import { useExtTranslations } from '../../translations.ts';
 
 export default function AdminConfigurationPage() {
