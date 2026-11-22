@@ -20,6 +20,18 @@ mod post {
     };
     use utoipa::ToSchema;
 
+    /// Core permissions an install needs besides `modpacks.install`, matching the core routes: the
+    /// extension's permission never stands in for a core one. Both modes run the server's install
+    /// container, which core's Reinstall guards. Keeping worlds still overwrites and deletes the
+    /// previous modpack's files, which core's file routes guard.
+    fn core_permissions(mode: InstallMode) -> Vec<&'static str> {
+        let mut permissions = vec!["settings.install"];
+        if mode == InstallMode::Replace {
+            permissions.extend(["files.create", "files.delete"]);
+        }
+        permissions
+    }
+
     #[derive(ToSchema, Validate, Deserialize)]
     pub struct Payload {
         #[garde(skip)]
@@ -75,9 +87,8 @@ mod post {
         }
 
         permissions.has_server_permission("modpacks.install")?;
-        // Wiping every file is what the core reinstall guards; modpacks.install doesn't replace it.
-        if data.mode == InstallMode::Wipe {
-            permissions.has_server_permission("settings.install")?;
+        for permission in core_permissions(data.mode) {
+            permissions.has_server_permission(permission)?;
         }
 
         if server.status.is_some() {
@@ -174,6 +185,20 @@ mod post {
                 .ok()
         })
         .await?
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::{InstallMode, core_permissions};
+
+        #[test]
+        fn every_install_mode_needs_core_permissions() {
+            assert_eq!(
+                core_permissions(InstallMode::Replace),
+                ["settings.install", "files.create", "files.delete"]
+            );
+            assert_eq!(core_permissions(InstallMode::Wipe), ["settings.install"]);
+        }
     }
 }
 

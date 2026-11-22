@@ -76,8 +76,10 @@ export default function InstallModpackModal({ opened, onClose, target, overview 
   const navigate = useNavigate();
   const { server, updateServer } = useServerStore();
   const canChangeImagePermission = useServerCan('startup.docker-image');
-  // A clean install wipes every file, which needs the core reinstall permission.
+  // Core permissions modpacks.install doesn't replace. Both modes run the server's install container;
+  // keeping worlds also overwrites and deletes files.
   const canWipe = useServerCan('settings.install');
+  const canReplace = useServerCan(['settings.install', 'files.create', 'files.delete'], false);
 
   const [loader, setLoader] = useState<Loader | null>(null);
   const [gameVersion, setGameVersion] = useState<string | null>(null);
@@ -325,7 +327,11 @@ export default function InstallModpackModal({ opened, onClose, target, overview 
             value={mode}
             onChange={(value) => setMode(value as InstallMode)}
             data={[
-              { value: 'replace', label: tExt('pages.server.modpacks.install.modes.replace', {}) },
+              {
+                value: 'replace',
+                label: tExt('pages.server.modpacks.install.modes.replace', {}),
+                disabled: !canReplace,
+              },
               {
                 value: 'wipe',
                 label: tExt('pages.server.modpacks.install.modes.wipe', {}),
@@ -336,13 +342,15 @@ export default function InstallModpackModal({ opened, onClose, target, overview 
           <Text size='xs' c={mode === 'wipe' ? 'red' : 'dimmed'} component='div'>
             {mode === 'wipe'
               ? tExt('pages.server.modpacks.install.modes.wipeDescription', {}).md()
-              : overview.allowCleanInstall && canWipe
-                ? tExt('pages.server.modpacks.install.modes.replaceDescription', {})
-                : `${tExt('pages.server.modpacks.install.modes.replaceDescription', {})} ${
-                    overview.allowCleanInstall
-                      ? tExt('pages.server.modpacks.install.modes.wipeNoPermission', {})
-                      : tExt('pages.server.modpacks.install.modes.wipeDisabled', {})
-                  }`}
+              : [
+                  tExt('pages.server.modpacks.install.modes.replaceDescription', {}),
+                  !canReplace && tExt('pages.server.modpacks.install.modes.replaceNoPermission', {}),
+                  !overview.allowCleanInstall
+                    ? tExt('pages.server.modpacks.install.modes.wipeDisabled', {})
+                    : !canWipe && tExt('pages.server.modpacks.install.modes.wipeNoPermission', {}),
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
           </Text>
         </Stack>
 
@@ -420,7 +428,7 @@ export default function InstallModpackModal({ opened, onClose, target, overview 
             color={mode === 'wipe' ? 'red' : 'blue'}
             leftSection={<FontAwesomeIcon icon={faDownload} />}
             loading={loading || resolving}
-            disabled={!selectedVersion || !selectedVersion.downloadable}
+            disabled={!selectedVersion || !selectedVersion.downloadable || (mode === 'wipe' ? !canWipe : !canReplace)}
             onClick={doInstall}
           >
             {tExt('pages.server.modpacks.install.submit', {})}

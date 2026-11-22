@@ -86,8 +86,10 @@ Permissions:
 - admin: `modpacks.read`, `modpacks.manage`
 
 Switching the docker image while installing also requires the core `startup.docker-image`
-permission, and a clean install (which deletes every file) requires the core `settings.install`
-permission.
+permission. Every install requires the core `settings.install` permission, since it runs the
+server's install container as the panel's own Reinstall does. Keeping worlds & settings
+additionally requires `files.create` and `files.delete`, because it overwrites and deletes the
+previous modpack's files.
 
 ## API
 

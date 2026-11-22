@@ -166,6 +166,8 @@ const translations = defineTranslations({
               wipeDescription: 'Deletes **all** server files, including worlds, before installing.',
               wipeDisabled: 'Clean installs have been disabled by an administrator.',
               wipeNoPermission: 'Clean installs need the permission to reinstall the server.',
+              replaceNoPermission:
+                'Keeping worlds & settings needs the permissions to reinstall the server and to create and delete files.',
             },
             dockerImage: 'Java version (docker image)',
             dockerImageDescription: 'Minecraft {version} needs Java {java}.',
