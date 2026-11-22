@@ -75,6 +75,10 @@ mod post {
         }
 
         permissions.has_server_permission("modpacks.install")?;
+        // Wiping every file is what the core reinstall guards; modpacks.install doesn't replace it.
+        if data.mode == InstallMode::Wipe {
+            permissions.has_server_permission("settings.install")?;
+        }
 
         if server.status.is_some() {
             return ApiResponse::error("the server is already installing or restoring a backup")

@@ -76,6 +76,8 @@ export default function InstallModpackModal({ opened, onClose, target, overview 
   const navigate = useNavigate();
   const { server, updateServer } = useServerStore();
   const canChangeImagePermission = useServerCan('startup.docker-image');
+  // A clean install wipes every file, which needs the core reinstall permission.
+  const canWipe = useServerCan('settings.install');
 
   const [loader, setLoader] = useState<Loader | null>(null);
   const [gameVersion, setGameVersion] = useState<string | null>(null);
@@ -327,16 +329,20 @@ export default function InstallModpackModal({ opened, onClose, target, overview 
               {
                 value: 'wipe',
                 label: tExt('pages.server.modpacks.install.modes.wipe', {}),
-                disabled: !overview.allowCleanInstall,
+                disabled: !overview.allowCleanInstall || !canWipe,
               },
             ]}
           />
           <Text size='xs' c={mode === 'wipe' ? 'red' : 'dimmed'} component='div'>
             {mode === 'wipe'
               ? tExt('pages.server.modpacks.install.modes.wipeDescription', {}).md()
-              : overview.allowCleanInstall
+              : overview.allowCleanInstall && canWipe
                 ? tExt('pages.server.modpacks.install.modes.replaceDescription', {})
-                : `${tExt('pages.server.modpacks.install.modes.replaceDescription', {})} ${tExt('pages.server.modpacks.install.modes.wipeDisabled', {})}`}
+                : `${tExt('pages.server.modpacks.install.modes.replaceDescription', {})} ${
+                    overview.allowCleanInstall
+                      ? tExt('pages.server.modpacks.install.modes.wipeNoPermission', {})
+                      : tExt('pages.server.modpacks.install.modes.wipeDisabled', {})
+                  }`}
           </Text>
         </Stack>
 

@@ -3,7 +3,7 @@
 A [Calagopus Panel](https://calagopus.com) extension that lets users browse Minecraft modpacks on
 **Modrinth** and **CurseForge** and install them onto their server in one click.
 
-Package name: `dev.caloptreyx.modpacks` · Requires panel `>=1.2.6`
+Package name: `dev.caloptreyx.modpacks` · Requires panel `>=1.2.10`
 
 ## Features
 
@@ -86,6 +86,7 @@ Permissions:
 - admin: `modpacks.read`, `modpacks.manage`
 
 Switching the docker image while installing also requires the core `startup.docker-image`
+permission, and a clean install (which deletes every file) requires the core `settings.install`
 permission.
 
 ## API
