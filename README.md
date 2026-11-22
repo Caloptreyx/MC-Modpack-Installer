@@ -59,6 +59,24 @@ Installs run through the panel's native Wings reinstall flow. The server locks i
   on the installed modpack card.
 - EULA acceptance is optional (`eula.txt`).
 
+## Screenshots
+
+**Browse**: modpacks from Modrinth and CurseForge with filters and sorting.
+
+![Browse page with CurseForge modpacks](docs/screenshots/browse.png)
+
+**Modpack details**: the Versions tab with loader, Minecraft version and release type filters.
+
+![Modpack details with the Versions tab](docs/screenshots/modpack-versions.png)
+
+**Install Modpack modal**: loader, Minecraft version, modpack version, install mode and Java image.
+
+![Install Modpack modal](docs/screenshots/install-modal.png)
+
+**Admin settings**: platforms and the CurseForge API key.
+
+![Modpack Installer admin settings](docs/screenshots/admin-settings.png)
+
 ## Installing the extension
 
 Download `dev_caloptreyx_modpacks.c7s.zip` from the
