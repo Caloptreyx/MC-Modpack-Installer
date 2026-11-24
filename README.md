@@ -126,6 +126,28 @@ Download URLs are always resolved on the backend. The install script only fetche
 the Modrinth CDN, the modrinth.index.json host allowlist and the CurseForge CDN. Modpack
 installations are logged as the `server:modpacks.install` activity.
 
+## Installed modpack marker
+
+After an installation the script writes `/.modpack-installer.json` in the server root. Other tools
+may read it (it is at most 2 MiB). Besides the pack's source, ids, name, version, Minecraft version
+and loader, it contains a `files` list with one entry per file the pack placed under `mods/`
+(downloaded files and override jars, after client-only mods were removed):
+
+```json
+"files": [
+  { "path": "mods/sodium-fabric-0.6.13+mc1.21.1.jar", "sha1": "<sha1 of the file on disk>",
+    "source": "modrinth", "project_id": "AANobbMI", "file_id": "<Modrinth version id>" },
+  { "path": "mods/jei-1.21.1.jar", "sha1": "…", "source": "curseforge",
+    "project_id": "238222", "file_id": "<CurseForge file id>" },
+  { "path": "mods/custom.jar", "sha1": "…", "source": "override", "project_id": null, "file_id": null }
+]
+```
+
+Paths are POSIX and relative to the server root. Modrinth ids come from
+`cdn.modrinth.com/data/<project>/versions/<version>/` download URLs (null otherwise). CurseForge
+files fetched from an identical Modrinth copy keep their CurseForge ids. Markers written by
+versions before 0.1.8 have no `files` key.
+
 ## License
 
 MIT

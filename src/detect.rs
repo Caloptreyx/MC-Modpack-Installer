@@ -14,7 +14,7 @@ use wings_api::client::WingsClient;
 
 /// File written by the installation script, see `install.py`.
 pub const MARKER_FILE: &str = ".modpack-installer.json";
-const MAX_MARKER_SIZE: u64 = 64 * 1024;
+const MAX_MARKER_SIZE: u64 = 2 * 1024 * 1024;
 const MAX_LOG_SIZE: u64 = 256 * 1024;
 
 #[derive(ToSchema, Serialize, Clone, Copy, PartialEq, Eq, Debug)]

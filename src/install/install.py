@@ -18,6 +18,7 @@ import hashlib
 import json
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -321,11 +322,30 @@ def java_feature_version(minecraft_version):
 class PackFile:
     """A file that has to be downloaded into the server directory."""
 
-    def __init__(self, target, urls, hashes, label):
+    def __init__(self, target, urls, hashes, label, source=None, project_id=None, file_id=None):
         self.target = target  # PurePosixPath relative to the server root, or ("@datapacks", name)
         self.urls = urls
         self.hashes = hashes
         self.label = label
+        # provenance written to the marker's "files" list
+        self.source = source
+        self.project_id = project_id
+        self.file_id = file_id
+
+
+MODRINTH_CDN_PATH = re.compile(r"^/data/([A-Za-z0-9]+)/versions/([A-Za-z0-9]+)/[^/]+$")
+
+
+def modrinth_ids(urls):
+    """Returns (project id, version id) parsed from a cdn.modrinth.com download URL, or (None, None)."""
+    for url in urls:
+        parsed = urllib.parse.urlsplit(url)
+        if (parsed.hostname or "").lower() != "cdn.modrinth.com":
+            continue
+        match = MODRINTH_CDN_PATH.match(parsed.path)
+        if match:
+            return match.group(1), match.group(2)
+    return None, None
 
 
 def parse_modrinth(archive):
@@ -358,7 +378,8 @@ def parse_modrinth(archive):
             raise InstallError(f"{rel} has no download from an allowed host")
         hashes = entry.get("hashes") or {}
         verified = {"sha512": hashes["sha512"]} if hashes.get("sha512") else {"sha1": hashes.get("sha1", "")}
-        files.append(PackFile(rel, urls, verified, str(rel)))
+        project_id, version_id = modrinth_ids(urls)
+        files.append(PackFile(rel, urls, verified, str(rel), "modrinth", project_id, version_id))
 
     return {
         "name": index.get("name") or PACK_NAME,
@@ -486,7 +507,9 @@ def parse_curseforge(archive):
                 }
             )
             continue
-        files.append(PackFile(target, [url], {"sha1": sha1}, filename))
+        files.append(
+            PackFile(target, [url], {"sha1": sha1}, filename, "curseforge", str(entry["projectID"]), str(entry["fileID"]))
+        )
 
     return {
         "name": manifest.get("name") or PACK_NAME,
@@ -573,8 +596,10 @@ def move_staged():
         shutil.move(str(path), str(destination))
 
 
-def apply_overrides(archive, prefixes):
-    """Extracts the override folders of the pack. Returns the top-level names it wrote."""
+def apply_overrides(archive, prefixes, placed=None):
+    """Extracts the override folders of the pack. Returns the top-level names it wrote.
+
+    Every written path (POSIX, relative to the server root) is added to `placed` when given."""
     written = set()
     decided = {}
     for prefix in prefixes:
@@ -601,7 +626,33 @@ def apply_overrides(archive, prefixes):
             with archive.open(info) as source, open(destination, "wb") as out:
                 shutil.copyfileobj(source, out)
             written.add(top)
+            if placed is not None:
+                placed.add(rel.as_posix())
     return sorted(written)
+
+
+def tracked_mod_files(pack_files, override_paths):
+    """Builds the marker's "files" list: every file the pack placed under mods/ that is still on disk."""
+    entries = {}
+    for item in pack_files:
+        if isinstance(item.target, tuple):
+            continue
+        path = item.target.as_posix()
+        entries[path] = (item.source, item.project_id, item.file_id)
+    for path in override_paths:
+        entries[path] = ("override", None, None)  # overrides are extracted after downloads and win
+    files = []
+    for path in sorted(entries):
+        if PurePosixPath(path).parts[0] != "mods":
+            continue
+        disk = ROOT / path
+        if not disk.is_file():
+            continue  # removed as client-only
+        source, project_id, file_id = entries[path]
+        files.append(
+            {"path": path, "sha1": file_hash(disk, "sha1"), "source": source, "project_id": project_id, "file_id": file_id}
+        )
+    return files
 
 
 def remove_previous_install(previous):
@@ -968,7 +1019,8 @@ def main():
         move_staged()
 
         progress(80, "Applying overrides")
-        managed = apply_overrides(archive, pack["overrides"])
+        override_paths = set()
+        managed = apply_overrides(archive, pack["overrides"], override_paths)
 
     if loader:
         progress(84, f"Installing {loader[0]}")
@@ -995,6 +1047,7 @@ def main():
         "managed": sorted(set(managed) | {"mods"}),
         "removed_client_mods": removed,
         "missing_files": [item["file"] for item in pack["missing"]],
+        "files": tracked_mod_files(pack["files"], override_paths),
     }
     MARKER.write_text(json.dumps(marker, indent=2) + "\n", encoding="utf-8")
 
